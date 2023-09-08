@@ -1,2 +1,2 @@
 # GWMlib
-Generic Water Isotope Library
+A Generic Water Isotope Library
