@@ -24,7 +24,7 @@
 !      Latest modifications : 
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 
-       MODULE isowat_topdefs_mod
+       MODULE isowat_topdefs
        
 
        implicit none
@@ -50,4 +50,12 @@
        INTEGER(ip), parameter      :: iwat18 = 4
        INTEGER(ip), parameter      :: iwat2h = 5       
 
-       END MODULE isowat_topdefs_mod
+
+! dmr  Temperature of 0°C in K                   (in K)
+       real(dp), parameter :: tK_zero_C  = 273.15_dp
+
+! afq  Tiny numbers
+       real(sp), parameter :: eps_sp = epsilon(eps_sp)
+       real(dp), parameter :: eps_dp = epsilon(eps_dp)
+
+       END MODULE isowat_topdefs

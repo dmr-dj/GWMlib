@@ -24,14 +24,14 @@
 !      Latest modifications : Sept. 08th, 2023
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 
-       MODULE isowat_defs_mod
+       MODULE isowat_defs
        
-       use isowat_topdefs_mod, only: ip, dblp=>dp
-       use isowat_topdefs_mod, only: nwisos, iwat18, iwat2h, iwat16, iwat17
+       use isowat_topdefs, only: ip, dblp=>dp
+       use isowat_topdefs, only: nwisos, iwat18, iwat2h, iwat16, iwat17
 
        implicit none
 
-       private 
+!~        private 
 
 !  DEFINITIONS DU MODELE ISOTOPIQUE v2023
 ! 
@@ -132,4 +132,4 @@
        REAL(kind=dblp), PARAMETER :: d18iniCste30 = -30.E-3_dblp,                                               &
                     diniCste_m30pm(nwisos) = [0.d0,0.d0,(d18iniCste30/1000.+1.0d0)**0.528d0-1.0, d18iniCste30,d18iniCste30*8._dblp]
 
-       END MODULE isowat_defs_mod
+       END MODULE isowat_defs
