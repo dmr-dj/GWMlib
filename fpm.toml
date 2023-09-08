@@ -1,0 +1,12 @@
+name = "GWMlib"
+version = "0.1.0"
+license = "Apache-2.0"
+author = "Didier M. Roche"
+maintainer = "didier.roche@lsce.ipsl.fr"
+copyright = "Copyright 2023, Didier M. Roche"
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+[install]
+library = true
