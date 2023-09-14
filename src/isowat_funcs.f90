@@ -245,7 +245,38 @@
        enddo              
        
        end function moles2delta
+       
 
+       pure function moles2R(nb_moles) result (ratiows)
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!       Variables d'entree  : 
+!        nb_moles : le tableau des contenus molaires pour 16->nwisos
+!       Variables de sortie : 
+!        deltaws = deltaw17, deltaw18, deltaw2h, les deltas conventionnels ( ~ 1.E-3 )
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+
+       
+       IMPLICIT NONE
+
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos), intent(in) :: nb_moles       
+              
+       ! OUT
+       REAL(kind=dblp), DIMENSION(iwat17:nwisos) :: ratiows
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!      Variables locales
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|       
+       
+       INTEGER(kind=ip) :: iso
+       
+       ! Conventional ratio is ^in_w/^16n_w
+       do iso=iwat17,nwisos
+         ratiows(iso) = nb_moles(iso)/(nb_moles(iwat16) * 1000._dblp) ! 1000 for kmoles -> moles in iwat16
+       enddo              
+       
+       end function moles2R
+       
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !      Fonction pour calculer le fractionnement isotopique à l'évaporation
 !       Utilises : l'eau liquide à évaporer
@@ -256,12 +287,13 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
 
 
-       pure function liq_vap_E(rmois, ratiosIso,tempK) result(nb_molesvap)
+       function liq_vap_E(rmois_vap, molesisoliq, tempK, rmois_liq) result(nb_molesvap)
        
        USE isowat_alphas, only: alpha_lv
 
-       REAL(kind=dblp), DIMENSION(iwat17:nwisos), INTENT(in) :: ratiosIso
-       REAL(kind=dblp), INTENT(IN) :: rmois, tempK
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos), INTENT(in) :: molesisoliq
+       REAL(kind=dblp), INTENT(IN) :: rmois_vap, tempK
+       REAL(kind=dblp), INTENT(IN), OPTIONAL :: rmois_liq
        
 
        ! OUT
@@ -271,21 +303,29 @@
 !      Variables locales
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
        
-       REAL(kind=dblp), DIMENSION(iwat17:nwisos) :: alphaeq
-       REAL(kind=dblp) :: coef1, coef2, nbmoleswater
+       REAL(kind=dblp), DIMENSION(iwat17:nwisos) :: alphaeq, ratiosIso
+       REAL(kind=dblp) :: coef1, coef2, nbmoleswatervap
        INTEGER(kind=ip):: iso
        
-       nbmoleswater = rmois2nbmolesw(rmois)
+       nbmoleswatervap = rmois2nbmolesw(rmois_vap)*1000.0_dblp ! output of rmois2nbmolesw is in kmoles
+       
+       ratiosIso(:) = moles2R(molesisoliq)
        alphaeq(:) = alpha_lv(tempK)
+
+       coef1 = 1._dblp+SUM(ratiosIso(:))
+       coef2 = 1._dblp+SUM(ratiosIso(:)/alphaeq(:))
+
+       if (PRESENT(rmois_liq)) then
+         do iso=iwat17,nwisos
+           nb_molesvap(iso) = molesisoliq(iso)/alphaeq(iso) * (rmois_vap/rmois_liq) * (coef1/coef2)
+         enddo
+       else
+         do iso=iwat17,nwisos
+           nb_molesvap(iso) = ratiosIso(iso)/alphaeq(iso) * nbmoleswatervap/coef2 
+         enddo
+       endif
        
-       coef1 = 1._dblp+SUM(ratiosIso(:)/alphaeq(:))
-       coef2 = nbmoleswater / coef1
-       
-       do iso=iwat17,nwisos
-         nb_molesvap(iso) = ratiosIso(iso)/alphaeq(iso) * coef2
-       enddo
-       
-       nb_molesvap(iwat16) = nbmoleswater-sum(nb_molesvap(iwat17:nwisos))/1000._dblp
+       nb_molesvap(iwat16) = (nbmoleswatervap-sum(nb_molesvap(iwat17:nwisos)))/1000._dblp
        
        end function liq_vap_E
 
