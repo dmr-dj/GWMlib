@@ -25,6 +25,9 @@
        ! Testing fractionnation factors in delta mode
              
              
+       LOGICAL :: ACCURACY_WRITING = .TRUE.      
+             
+             
        delta_test = diniCste_m12pm
        ratio_test(iwat16:nwisos) = delta2R(delta_test(iwat16:nwisos),iwatns(:))
 
@@ -77,32 +80,46 @@
 
        I_M_OK = check_isowat_content(rmoisgtest,molesisowater)
 
-!~        WRITE(*,*) "Coherence check of isotopic content "
-!~        WRITE(*,*) "=================================== "
-!~        WRITE(*,2345) "Below tolerance? [T/F]", I_M_OK
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
 
+       WRITE(*,*) "Coherence check of isotopic content "
+       WRITE(*,*) "=================================== "
+       WRITE(*,2345) "Below tolerance? [T/F]", I_M_OK
+       WRITE(*,*)
 
+       ENDIF
+       
        test_result(:) = REAL_EQUAL(moles2delta(molesisowater(iwat16:nwisos)),delta_test(iwat17:nwisos))
        
-!~        WRITE(*,*) "Absolute error on delta calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+
+       WRITE(*,*) "Absolute error on delta calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       
+       ENDIF
        
        ratio2check(iwat17:nwisos) = moles2R(molesisowater(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(ratio2check(iwat17:nwisos),ratio_test(iwat17:nwisos))
 
-!~        WRITE(*,*) "Absolute error on ratio calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+
+       WRITE(*,*) "Absolute error on ratio calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+
+       ENDIF
        
        WRITE(*,*) "Equilibrium liquid -> vapor fractionnation "
        WRITE(*,*) "========================================== "
-!~        WRITE(*,*) "              VERSION 1                    "
+       
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*) "              VERSION 1                    "
+       ENDIF
 
        ! USING THE OLD DEFINITION / METHODOLOGY
        alpha_test1(iwat17:nwisos) = alpha_lv(tK_fraclv)
@@ -115,35 +132,44 @@
        ! VERSION 1, using only moles isowater (liquid implicit in iwat16) and rmoisg of vapor       
        moles_frac(iwat16:nwisos) = liq_vap_E(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fraclv)
        
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
-
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
+       
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
-
-!~        WRITE(*,*) "              VERSION 2                 "
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*) "              VERSION 2                 "
+       ENDIF
        
        ! VERSION 2, using moles isowater and rmoisg of vapor & liquid        
        moles_frac(iwat16:nwisos) = liq_vap_E(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fraclv,rmois_liq=rmoisgtest)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
        WRITE(*,*) "Evaporated deltas "
        WRITE(*,*) "================= "
@@ -155,7 +181,9 @@
 
        WRITE(*,*) "Equilibrium vapor -> liquid fractionnation "
        WRITE(*,*) "========================================== "
-!~        WRITE(*,*) "              VERSION 1                 "
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*) "              VERSION 1                 "
+       ENDIF
 
        ! USING THE OLD DEFINITION / METHODOLOGY
        alpha_test1(iwat17:nwisos) = 1._dblp/alpha_lv(tK_fraclv)
@@ -167,34 +195,44 @@
        ! VERSION 1, using only moles isowater (vapor implicit in iwat16) and rmoisg of liquid
        moles_frac(iwat16:nwisos) = vap_liq_C(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fraclv)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
-!~        WRITE(*,*) "              VERSION 2                 "
-       
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*) "              VERSION 2                 "
+       ENDIF
+              
        ! VERSION 2, using moles isowater and rmoisg of vapor & liquid        
        moles_frac(iwat16:nwisos) = vap_liq_C(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fraclv,rmois_vap=rmoisgtest)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
        WRITE(*,*) "Condensed deltas "
        WRITE(*,*) "================ "
@@ -218,7 +256,9 @@
 
        WRITE(*,*) "Equilibrium solid -> vapor fractionnation "
        WRITE(*,*) "========================================== "
-!~        WRITE(*,*) "              VERSION 1                    "
+       IF (ACCURACY_WRITING) THEN       
+       WRITE(*,*) "              VERSION 1                    "
+       ENDIF
 
        ! USING THE OLD DEFINITION / METHODOLOGY
        alpha_test1(iwat17:nwisos) = alpha_lv(tK_fraclv)
@@ -231,35 +271,44 @@
        ! VERSION 1, using only moles isowater (liquid implicit in iwat16) and rmoisg of vapor       
        moles_frac(iwat16:nwisos) = sol_vap_S(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv)
        
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
-
-!~        WRITE(*,*) "              VERSION 2                 "
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*) "              VERSION 2                 "
+       ENDIF
        
        ! VERSION 2, using moles isowater and rmoisg of vapor & liquid        
        moles_frac(iwat16:nwisos) = sol_vap_S(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv,rmois_liq=rmoisgtest)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
        WRITE(*,*) "Evaporated deltas "
        WRITE(*,*) "================= "
@@ -271,7 +320,9 @@
 
        WRITE(*,*) "Equilibrium vapor -> solid fractionnation "
        WRITE(*,*) "========================================== "
-!~        WRITE(*,*) "              VERSION 1                 "
+       IF (ACCURACY_WRITING) THEN       
+       WRITE(*,*) "              VERSION 1                 "
+       ENDIF
 
        ! USING THE OLD DEFINITION / METHODOLOGY
        alpha_test1(iwat17:nwisos) = 1._dblp/alpha_lv(tK_fraclv)
@@ -283,34 +334,44 @@
        ! VERSION 1, using only moles isowater (vapor implicit in iwat16) and rmoisg of liquid
        moles_frac(iwat16:nwisos) = vap_sol_C(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
-
+       IF (ACCURACY_WRITING) THEN       
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
+       
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN       
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
-!~        WRITE(*,*) "              VERSION 2                 "
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,*) "              VERSION 2                 "
+       ENDIF
        
        ! VERSION 2, using moles isowater and rmoisg of vapor & liquid        
        moles_frac(iwat16:nwisos) = vap_sol_C(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv,rmois_vap=rmoisgtest)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
        WRITE(*,*) "Condensed deltas "
        WRITE(*,*) "================ "
@@ -320,18 +381,16 @@
        WRITE(*,*)
 
 
-
-
-
-
 ! --- WITH KINETIC FRACTIONNATION
 
 
 
        WRITE(*,*) "Equilibrium solid -> vapor fractionnation + KINETIC "
        WRITE(*,*) "=================================================== "
-!~        WRITE(*,*) "                   VERSION 1                        "
-
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,*) "                   VERSION 1                        "
+       ENDIF
+       
        ! USING THE OLD DEFINITION / METHODOLOGY
        alpha_test1(iwat17:nwisos) = alpha_lv(tK_fraclv)
        alpha_test2(iwat17:nwisos) = alpha_sve(tK_fracsv)
@@ -343,36 +402,45 @@
        ! VERSION 1, using only moles isowater (liquid implicit in iwat16) and rmoisg of vapor       
        moles_frac(iwat16:nwisos) = sol_vap_S(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv,KF=.TRUE.)
        
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
-
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
+       
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
-
-!~        WRITE(*,*) "              VERSION 2                 "
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,*) "              VERSION 2                 "
+       ENDIF
        
        ! VERSION 2, using moles isowater and rmoisg of vapor & liquid        
        moles_frac(iwat16:nwisos) = sol_vap_S(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv     &
                                             ,rmois_liq=rmoisgtest,KF=.TRUE.)
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
-
+ 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN              
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
        WRITE(*,*) "Evaporated deltas "
        WRITE(*,*) "================= "
@@ -384,7 +452,9 @@
 
        WRITE(*,*) "Equilibrium vapor -> solid fractionnation + KINETIC"
        WRITE(*,*) "================================================== "
-!~        WRITE(*,*) "                   VERSION 1                       "
+       IF (ACCURACY_WRITING) THEN                     
+       WRITE(*,*) "                   VERSION 1                       "
+       ENDIF
 
        ! USING THE OLD DEFINITION / METHODOLOGY
        alpha_test1(iwat17:nwisos) = 1._dblp/alpha_lv(tK_fraclv)
@@ -396,35 +466,45 @@
        ! VERSION 1, using only moles isowater (vapor implicit in iwat16) and rmoisg of liquid
        moles_frac(iwat16:nwisos) = vap_sol_C(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv,KF=.TRUE.)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN                     
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN                     
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
-!~        WRITE(*,*) "              VERSION 2                 "
+       IF (ACCURACY_WRITING) THEN                     
+       WRITE(*,*) "              VERSION 2                 "
+       ENDIF
        
        ! VERSION 2, using moles isowater and rmoisg of vapor & liquid        
        moles_frac(iwat16:nwisos) = vap_sol_C(rmoisgtest*prop_evap, molesisowater(iwat16:nwisos),tK_fracsv         &
                                             ,rmois_vap=rmoisgtest,KF=.TRUE.)
 
-!~        WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       IF (ACCURACY_WRITING) THEN                     
+       WRITE(*,2345) " Below tolerance? [T/F]", check_isowat_content(rmoisgtest*prop_evap,moles_frac)
+       ENDIF
 
        delta_fracX(iwat17:nwisos) = moles2delta(moles_frac(iwat16:nwisos))
        test_result(iwat17:nwisos) = REAL_EQUAL(delta_fracR(iwat17:nwisos),delta_fracX(iwat17:nwisos))
 
-!~        WRITE(*,*)       
-!~        WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
-!~        WRITE(*,2345) "17O == ", test_result(iwat17)
-!~        WRITE(*,2345) "18O == ", test_result(iwat18)
-!~        WRITE(*,2345) "2H  == ", test_result(iwat2h)
-!~        WRITE(*,*)
+       IF (ACCURACY_WRITING) THEN                     
+       WRITE(*,*)       
+       WRITE(*,*) "Absolute error on deltaeq calculations below tolerance? [T/F]"
+       WRITE(*,2345) "17O == ", test_result(iwat17)
+       WRITE(*,2345) "18O == ", test_result(iwat18)
+       WRITE(*,2345) "2H  == ", test_result(iwat2h)
+       WRITE(*,*)
+       ENDIF
 
        WRITE(*,*) "Condensed deltas "
        WRITE(*,*) "================ "
@@ -432,14 +512,6 @@
        WRITE(*,1234) "d18O == ", delta_fracX(iwat18)*1000._dblp
        WRITE(*,1234) "d2H  == ", delta_fracX(iwat2h)*1000._dblp
        WRITE(*,*)
-
-
-
-
-
-
-
-
 
 
 
