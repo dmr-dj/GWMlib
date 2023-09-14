@@ -287,7 +287,7 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
 
 
-       function liq_vap_E(rmois_vap, molesisoliq, tempK, rmois_liq) result(nb_molesvap)
+       pure function liq_vap_E(rmois_vap, molesisoliq, tempK, rmois_liq) result(nb_molesvap)
        
        USE isowat_alphas, only: alpha_lv
 
@@ -334,7 +334,7 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
 
 
-       function vap_liq_C(rmois_liq, molesisovap, tempK, rmois_vap) result(nb_molesliq)
+       pure function vap_liq_C(rmois_liq, molesisovap, tempK, rmois_vap) result(nb_molesliq)
        
        USE isowat_alphas, only: alpha_lv
 
@@ -386,7 +386,7 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
 
 
-       function sol_vap_S(rmois_vap, molesisoliq, tempK, rmois_liq, KF) result(nb_molesvap)
+       pure function sol_vap_S(rmois_vap, molesisoliq, tempK, rmois_liq, KF) result(nb_molesvap)
        
        ! in this routine, liq means solid ... !
        
@@ -440,7 +440,7 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
 
 
-       function vap_sol_C(rmois_liq, molesisovap, tempK, rmois_vap, KF) result(nb_molesliq)
+       pure function vap_sol_C(rmois_liq, molesisovap, tempK, rmois_vap, KF) result(nb_molesliq)
 
        ! in this routine, liq means solid ... !
        
