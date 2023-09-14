@@ -377,6 +377,119 @@
        end function vap_liq_C
 
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!      Fonction pour calculer le fractionnement isotopique à l'évaporation
+!       Utilises : l'eau liquide à évaporer
+!                  les contenus isotopiques de l'eau liquide à évaporer
+!                  la température (en KELVIN)
+!
+!                  renvoie le nombre de moles d'eau évaporée dans chaque phase isotopique 17->fin
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
+
+
+       function sol_vap_S(rmois_vap, molesisoliq, tempK, rmois_liq, KF) result(nb_molesvap)
+       
+       ! in this routine, liq means solid ... !
+       
+       USE isowat_alphas, only: alpha_sv, alpha_sve
+
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos), INTENT(in) :: molesisoliq
+       REAL(kind=dblp), INTENT(IN) :: rmois_vap, tempK
+       REAL(kind=dblp), INTENT(IN), OPTIONAL :: rmois_liq
+       LOGICAL,         INTENT(IN), OPTIONAL :: KF
+       
+
+       ! OUT
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos) :: nb_molesvap
+       
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!      Variables locales
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
+       
+       REAL(kind=dblp), DIMENSION(iwat17:nwisos) :: alphaeq, ratiosIso
+       REAL(kind=dblp) :: coef1, coef2, nbmoleswatervap
+       INTEGER(kind=ip):: iso
+       
+       nbmoleswatervap = rmois2nbmolesw(rmois_vap)*1000.0_dblp ! output of rmois2nbmolesw is in kmoles
+       
+       ratiosIso(:) = moles2R(molesisoliq)
+       if (PRESENT(KF)) then
+         alphaeq(:) = alpha_sve(tempK)
+       else
+         alphaeq(:) = alpha_sv(tempK)
+       endif 
+       
+       coef1 = 1._dblp+SUM(ratiosIso(:))
+       coef2 = 1._dblp+SUM(ratiosIso(:)/alphaeq(:))
+
+       if (PRESENT(rmois_liq)) then
+         do iso=iwat17,nwisos
+           nb_molesvap(iso) = molesisoliq(iso)/alphaeq(iso) * (rmois_vap/rmois_liq) * (coef1/coef2)
+         enddo
+       else
+         do iso=iwat17,nwisos
+           nb_molesvap(iso) = ratiosIso(iso)/alphaeq(iso) * nbmoleswatervap/coef2 
+         enddo
+       endif
+       
+       nb_molesvap(iwat16) = (nbmoleswatervap-sum(nb_molesvap(iwat17:nwisos)))/1000._dblp
+       
+       end function sol_vap_S
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!        Same as sol_vap_S but for vap_sol_C
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
+
+
+       function vap_sol_C(rmois_liq, molesisovap, tempK, rmois_vap, KF) result(nb_molesliq)
+
+       ! in this routine, liq means solid ... !
+       
+       USE isowat_alphas, only: alpha_sv, alpha_sve
+
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos), INTENT(in) :: molesisovap
+       REAL(kind=dblp), INTENT(IN) :: rmois_liq, tempK
+       REAL(kind=dblp), INTENT(IN), OPTIONAL :: rmois_vap
+       LOGICAL,         INTENT(IN), OPTIONAL :: KF
+
+       ! OUT
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos) :: nb_molesliq
+       
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!      Variables locales
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
+       
+       REAL(kind=dblp), DIMENSION(iwat17:nwisos) :: alphaeq, ratiosIso
+       REAL(kind=dblp) :: coef1, coef2, nbmoleswaterliq
+       INTEGER(kind=ip):: iso
+       
+       nbmoleswaterliq = rmois2nbmolesw(rmois_liq)*1000.0_dblp ! output of rmois2nbmolesw is in kmoles
+       
+       ratiosIso(:) = moles2R(molesisovap)
+       
+       if (PRESENT(KF)) then       
+         alphaeq(:) = 1._dblp/alpha_sve(tempK)
+       else
+         alphaeq(:) = 1._dblp/alpha_sv(tempK)
+       endif
+       
+       coef1 = 1._dblp+SUM(ratiosIso(:))
+       coef2 = 1._dblp+SUM(ratiosIso(:)/alphaeq(:))
+
+       if (PRESENT(rmois_vap)) then
+         do iso=iwat17,nwisos
+           nb_molesliq(iso) = molesisovap(iso)/alphaeq(iso) * (rmois_liq/rmois_vap) * (coef1/coef2)
+         enddo
+       else
+         do iso=iwat17,nwisos
+           nb_molesliq(iso) = ratiosIso(iso)/alphaeq(iso) * nbmoleswaterliq/coef2 
+         enddo
+       endif
+       
+       nb_molesliq(iwat16) = (nbmoleswaterliq-sum(nb_molesliq(iwat17:nwisos)))/1000._dblp
+       
+       end function vap_sol_C
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !       Fonction pour vérifier la coherence du contenu isotopique et de l'eau totale
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
        
