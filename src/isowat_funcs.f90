@@ -33,7 +33,9 @@
 
        implicit none
 
-       private 
+       private :: nwisos, iwat18, iwat2h, iwat16, iwat17, M16, rsmow
+
+       public :: rmois2nbmolesw, delta2moles, check_isowat_content, moles2delta, R2delta, delta2R
 
 !      Définitions de compatibilité ...
         INTEGER(kind=ip), PARAMETER :: iso_noc = 1_ip, iso_nld = 3_ip, iso_nse = 2_ip
@@ -103,7 +105,7 @@
 !-----|--1--------2---------3---------4---------5---------6---------7-|
 !       Routine pour le calcul du ratio a partir du delta
 !-----|--1--------2---------3---------4---------5---------6---------7-|
-        pure elemental function delta_invR(diso,n) result (riso_val)
+        pure elemental function delta2R(diso,n) result (riso_val)
 !-----|--1--------2---------3---------4---------5---------6---------7-|
 !       Variables d'entree  : 
 !        
@@ -126,12 +128,12 @@
 
        riso_val = rsmow(n) * (diso + 1._dblp) 
 
-       end function delta_invR
+       end function delta2R
               
 !-----|--1--------2---------3---------4---------5---------6---------7-|
 !       Routine pour le calcul du delta a partir du ratio
 !-----|--1--------2---------3---------4---------5---------6---------7-|
-        pure elemental function deltaR(riso,n) result (delta_val)
+        pure elemental function R2delta(riso,n) result (delta_val)
 !-----|--1--------2---------3---------4---------5---------6---------7-|
 !       Variables d'entree  : 
 !        ratio : ratio in moisture
@@ -153,15 +155,17 @@
 
        delta_val = 0._dblp
 
-       delta_val = (riso/rsmow(n) - 1._dblp) * 1000._dblp
+       delta_val = (riso/rsmow(n) - 1._dblp)
 
-       end function deltaR
+       end function R2delta
 
 
       pure elemental function rmois2nbmolesw(rmois) result(nbmolesw)
 
       REAL(kind=dblp) :: nbmolesw
       REAL(kind=dblp), INTENT(IN) :: rmois
+
+      ! dmr input rmoisg is in m3.m-2, output is in kmoles
 
       nbmolesw = ( rmois *1000.) / M16 ! M16 = molar mass of H216O 
 
@@ -170,7 +174,7 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !       Fonction pour calculer le contenu en moles isotopiques à partir du contenu en eau totale et du delta conventionnel
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
-        pure function delta2moles(rmois,deltaws) result (nb_moles)
+       pure function delta2moles(rmois,deltaws) result (nb_moles)
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !       Variables d'entree  : 
 !        rmois : le contenu en eau en m3.m-2 (typiquement rmoisg)
@@ -194,16 +198,17 @@
        REAL(kind=dblp), dimension(iwat17:nwisos) :: iso_ratios
        integer(kind=ip) :: iso
 
-        nb_molesw = rmois2nbmolesw(rmois)
+        nb_molesw = rmois2nbmolesw(rmois)*1000._dblp ! output of rmois2nbmolesw is in kmoles
         
         do iso=iwat17,nwisos
-          iso_ratios(iso) = delta_invR(deltaws(iso),iso)
+          iso_ratios(iso) = delta2R(deltaws(iso),iso)
         enddo
 
         nb_moles(iwat16) = nb_molesw / (1._dblp +  SUM(iso_ratios))
 
         do iso=iwat17,nwisos
           nb_moles(iso) = iso_ratios(iso) * nb_moles(iwat16)
+
         enddo
         
         nb_moles(iwat16) = nb_moles(iwat16) / 1000._dblp ! iwat16 is in kmoles while the rest is in moles
@@ -236,7 +241,7 @@
        
        ! Conventional delta is ^in_w/^16n_w / rsmow
        do iso=iwat17,nwisos
-         deltaws(iso) = (nb_moles(iso)/nb_moles(iwat16)) / (rsmow(iso) * 1000._dblp ) ! 1000 for kmoles -> moles in iwat16
+         deltaws(iso) = (nb_moles(iso)/nb_moles(iwat16)) / (rsmow(iso) * 1000._dblp ) -1._dblp ! 1000 for kmoles -> moles in iwat16
        enddo              
        
        end function moles2delta
@@ -251,7 +256,7 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
 
 
-       pure function evap_isoE(rmois, ratiosIso,tempK) result(nb_molesvap)
+       pure function liq_vap_E(rmois, ratiosIso,tempK) result(nb_molesvap)
        
        USE isowat_alphas, only: alpha_lv
 
@@ -280,9 +285,9 @@
          nb_molesvap(iso) = ratiosIso(iso)/alphaeq(iso) * coef2
        enddo
        
-       nb_molesvap(iwat16) = (nbmoleswater*1000._dblp-sum(nb_molesvap(iwat17:nwisos)))/1000._dblp
+       nb_molesvap(iwat16) = nbmoleswater-sum(nb_molesvap(iwat17:nwisos))/1000._dblp
        
-       end function evap_isoE
+       end function liq_vap_E
 
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !       Fonction pour vérifier la coherence du contenu isotopique et de l'eau totale
@@ -302,7 +307,7 @@
        IMPLICIT NONE
        
         REAL(kind=dblp), intent(in) :: rwat
-        REAL(kind=dblp), dimension(iwat16:nwisos), intent(in) :: nmoleswiso
+        REAL(kind=dblp), dimension(nwisos), intent(in) :: nmoleswiso
 
         logical :: OKISH
         
@@ -310,7 +315,7 @@
         
         nmolesleft = rmois2nbmolesw(rwat)
 
-        nmolesright = nmoleswiso(iwat16)*1000._dblp + SUM(nmoleswiso(iwat17:nwisos))
+        nmolesright = nmoleswiso(iwat16) + SUM(nmoleswiso(iwat17:nwisos))/1000._dblp
         
         OKISH = REAL_EQUAL(nmolesleft, nmolesright)
        
@@ -341,7 +346,7 @@
        logical :: OKISH
         
         OKISH = .FALSE.
-        OKISH = (ABS(realleft-realright).LE.eps_dp)       
+        OKISH = (ABS(realleft-realright).LE.eps_dp*1000._dblp)       
        
        end function REAL_EQUAL
 

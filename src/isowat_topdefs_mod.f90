@@ -49,7 +49,7 @@
        INTEGER(ip), parameter      :: iwat17 = 3
        INTEGER(ip), parameter      :: iwat18 = 4
        INTEGER(ip), parameter      :: iwat2h = 5       
-
+       INTEGER(ip), dimension(iwat16:nwisos), parameter :: iwatns = [iwat16,iwat17,iwat18,iwat2h]
 
 ! dmr  Temperature of 0°C in K                   (in K)
        real(dp), parameter :: tK_zero_C  = 273.15_dp

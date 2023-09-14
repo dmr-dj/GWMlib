@@ -31,7 +31,7 @@
 
        implicit none
 
-!~        private 
+       private nwisos, iwat18, iwat2h, iwat16, iwat17
 
 !  DEFINITIONS DU MODELE ISOTOPIQUE v2023
 ! 
@@ -124,6 +124,9 @@
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 
 ! dmr 2023-07-13   Deltas should be on the order of 1.E-3, not true everywhere at this date. 
+
+       REAL(kind=dblp), PARAMETER :: d18iniCste00 = -0.E-3_dblp,                                               & 
+          diniCste_m00pm(nwisos) = [0._dblp,0._dblp,(d18iniCste00+1._dblp)**fac_17Oexc-1.0_dblp, d18iniCste00,d18iniCste00*8._dblp]
 
 
        REAL(kind=dblp), PARAMETER :: d18iniCste12 = -12.E-3_dblp,                                               & 
