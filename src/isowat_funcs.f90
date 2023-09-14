@@ -35,7 +35,7 @@
 
        private :: nwisos, iwat18, iwat2h, iwat16, iwat17, M16, rsmow
 
-       public :: rmois2nbmolesw, delta2moles, check_isowat_content, moles2delta, R2delta, delta2R
+       public :: rmois2nbmolesw, delta2moles, check_isowat_content, moles2delta, R2delta, delta2R, liq_vap_E, vap_liq_C
 
 !      Définitions de compatibilité ...
         INTEGER(kind=ip), PARAMETER :: iso_noc = 1_ip, iso_nld = 3_ip, iso_nse = 2_ip
@@ -328,6 +328,53 @@
        nb_molesvap(iwat16) = (nbmoleswatervap-sum(nb_molesvap(iwat17:nwisos)))/1000._dblp
        
        end function liq_vap_E
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!        Same as liq_vap_E but for vap_liq_C
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
+
+
+       function vap_liq_C(rmois_liq, molesisovap, tempK, rmois_vap) result(nb_molesliq)
+       
+       USE isowat_alphas, only: alpha_lv
+
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos), INTENT(in) :: molesisovap
+       REAL(kind=dblp), INTENT(IN) :: rmois_liq, tempK
+       REAL(kind=dblp), INTENT(IN), OPTIONAL :: rmois_vap
+       
+
+       ! OUT
+       REAL(kind=dblp), DIMENSION(iwat16:nwisos) :: nb_molesliq
+       
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!      Variables locales
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|        
+       
+       REAL(kind=dblp), DIMENSION(iwat17:nwisos) :: alphaeq, ratiosIso
+       REAL(kind=dblp) :: coef1, coef2, nbmoleswaterliq
+       INTEGER(kind=ip):: iso
+       
+       nbmoleswaterliq = rmois2nbmolesw(rmois_liq)*1000.0_dblp ! output of rmois2nbmolesw is in kmoles
+       
+       ratiosIso(:) = moles2R(molesisovap)
+       alphaeq(:) = 1._dblp/alpha_lv(tempK)
+
+       coef1 = 1._dblp+SUM(ratiosIso(:))
+       coef2 = 1._dblp+SUM(ratiosIso(:)/alphaeq(:))
+
+       if (PRESENT(rmois_vap)) then
+         do iso=iwat17,nwisos
+           nb_molesliq(iso) = molesisovap(iso)/alphaeq(iso) * (rmois_liq/rmois_vap) * (coef1/coef2)
+         enddo
+       else
+         do iso=iwat17,nwisos
+           nb_molesliq(iso) = ratiosIso(iso)/alphaeq(iso) * nbmoleswaterliq/coef2 
+         enddo
+       endif
+       
+       nb_molesliq(iwat16) = (nbmoleswaterliq-sum(nb_molesliq(iwat17:nwisos)))/1000._dblp
+       
+       end function vap_liq_C
 
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !       Fonction pour vérifier la coherence du contenu isotopique et de l'eau totale
