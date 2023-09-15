@@ -6,12 +6,13 @@
        use isowat_defs,    only: diniCste_m12pm,  rsmow, diniCste_m00pm,diniCste_m30pm
        use isowat_alphas,  only: alpha_lv, alpha_sv, alpha_sve
        use isowat_funcs,   only: rmois2nbmolesw, delta2moles, check_isowat_content, moles2delta, REAL_EQUAL, delta2R, R2delta &
-                                , liq_vap_E, moles2R, vap_liq_C, vap_sol_C, sol_vap_S
+                                , liq_vap_E, moles2R, vap_liq_C, vap_sol_C, sol_vap_S, nbmolesw2rmois, dexcessX
          
        implicit none
        
        REAL(dblp), DIMENSION(nwisos) :: delta_test, ratio_test, alpha_test1, alpha_test2, molesisowater, molesisowaterfinal   &
-                                      , delta_fracR, moles_frac, delta_fracX, ratio2check
+                                      , delta_fracR, moles_frac, delta_fracX, ratio2check                                     &
+                                      , delta_fracX1, delta_fracX2, delta_fracX3
        
        REAL(dblp)                    :: tK_fraclv = tK_zero_C + 15._dblp, temp, moleswater,rmoisgtest                         &
                                       , tK_fracsv = tK_zero_C - 15._dblp
@@ -19,8 +20,14 @@
        REAL(dblp)                    :: min_nb_rmoisg = 0._dblp, max_nb_rmoisg = 5.2E-2_dblp ! in moles of water ...
        REAL(dblp)                    :: prop_evap = 4._dblp/5._dblp
        
+       REAL(dblp)                    :: nmolesinvapor, nmolesinliquid
+       REAL(dblp), DIMENSION(nwisos) :: vaporisocontent, liquidisocontent, delta_vapX, delta_liqX
+       
        LOGICAL                       :: I_M_OK
        LOGICAL, DIMENSION(iwat17:nwisos) :: test_result
+       
+       INTEGER                       :: frac
+       REAL(dblp)                    :: frac_vap
             
        ! Testing fractionnation factors in delta mode
              
@@ -567,15 +574,67 @@
        WRITE(*,1234) "d2H  == ", delta_fracX(iwat2h)*1000._dblp
        WRITE(*,*)
        
-       WRITE(*,*) "Left in vapor with Rayleigh "
-       WRITE(*,*) "=========================== "       
+       WRITE(*,*) "Performing a Rayleigh distillation"
+       WRITE(*,*) "================================= "   
        
-       WRITE(*,1234) " f**(a-1)  == ", (1.0-prop_evap)**(alpha_test1(iwat18)-1._dblp)
-       WRITE(*,1234) " final     == ",  &
-            R2delta(ratio_test(iwat18)*(1.0-prop_evap)**(alpha_test1(iwat18)-1._dblp),iwat18)*1000._dblp
+       WRITE(*,*) "Starting point: "
+       WRITE(*,*) "=============== "    
+       
+       
+       nmolesinvapor = moleswater
+       nmolesinliquid = 0._dblp
+       
+       vaporisocontent(iwater) = nmolesinvapor
+       vaporisocontent(iwat16:nwisos)  = molesisowater(iwat16:nwisos)
+       
+       liquidisocontent(:) = 0._dblp
+       
+       ! delta_vapX, delta_liqX
+       
+       delta_vapX(iwat17:nwisos) = moles2delta(vaporisocontent(iwat16:nwisos))
+       
+       WRITE(*,1234) "d18Ov = ", delta_vapX(iwat18)*1000._dblp
+              
+       do frac = 100, 1, -1
+         
+         frac_vap = real(frac)/100._dblp
+         
+         nmolesinvapor = moleswater*frac_vap            ! this is how much should left after this step
+         nmolesinliquid = vaporisocontent(iwater) - nmolesinvapor ! this is how much we condensate        
+
+         if (.not. REAL_EQUAL(nmolesinliquid,0._dblp)) then
+
+         liquidisocontent(iwater) = nmolesinliquid
+         liquidisocontent(iwat16:nwisos) = vap_liq_C(nbmolesw2rmois(nmolesinliquid), vaporisocontent(iwat16:nwisos) &
+                                                   ,tK_fraclv) !,rmois_vap=nmolesinvapor)
+
+         I_M_OK = check_isowat_content(liquidisocontent(iwater),liquidisocontent(:))
+        
+         delta_fracX1(iwat17:nwisos) = moles2delta(liquidisocontent(iwat16:nwisos))
+         
+         vaporisocontent(:) = vaporisocontent(:) - liquidisocontent(:)
+                 
+         delta_fracX2(iwat17:nwisos) = moles2delta(vaporisocontent(iwat16:nwisos))       
+         
+         WRITE(*,3456) "RayleigFrac", frac_vap, nmolesinvapor, nmolesinliquid, delta_fracX1(iwat18)*1000._dblp      &
+                                    , delta_fracX2(iwat18)*1000._dblp                                               &
+                                    , delta_fracX2(iwat2h)*1000._dblp                                               &
+                                 , dexcessX(vaporisocontent(iwat16),vaporisocontent(iwat18),vaporisocontent(iwat2h))&
+                                 , check_isowat_content(nbmolesw2rmois(vaporisocontent(iwater)),vaporisocontent(:)) &
+                                 , check_isowat_content(nbmolesw2rmois(liquidisocontent(iwater)),liquidisocontent(:))
+!~                                     , delta_fracX2(iwat2h)-8._dblp*delta_fracX2(iwat18)
+
+         vaporisocontent(iwater) = nmolesinvapor
+
+         endif
+
+
+       enddo
+
        
        
        
 1234   FORMAT(4X, A, 4X, F12.3)       
-2345   FORMAT(4X, A, 1X, L3)       
+2345   FORMAT(4X, A, 1X, L3)   
+3456   FORMAT(4X, A, 2X, 7F12.3, 2(2X, L3))      
        end program main

@@ -35,7 +35,8 @@
 
        private :: nwisos, iwat18, iwat2h, iwat16, iwat17, M16, rsmow
 
-       public :: rmois2nbmolesw, delta2moles, check_isowat_content, moles2delta, R2delta, delta2R, liq_vap_E, vap_liq_C
+       public :: rmois2nbmolesw, delta2moles, check_isowat_content, moles2delta, R2delta, delta2R, liq_vap_E, vap_liq_C          &
+               , nbmolesw2rmois, dexcessX
 
 !      Définitions de compatibilité ...
         INTEGER(kind=ip), PARAMETER :: iso_noc = 1_ip, iso_nld = 3_ip, iso_nse = 2_ip
@@ -101,6 +102,33 @@
           h2excess=(d/rsmow(iwat2h)-1.0_dblp)-8.0_dblp*(o/rsmow(iwat18)-1.0_dblp)
 
         end function dexcess
+
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!       Routine pour le calcul du deuterium-excess
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+        pure elemental function dexcessX(isowat16, isowat18, isowat2h) result (h2excess)
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!       Variables d'entree  : 
+!
+!       Variables de sortie : 
+!        dexcess : le d-excess
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+
+          IMPLICIT NONE
+
+          REAL(kind=dblp)             :: h2excess
+          REAL(kind=dblp), INTENT(IN) :: isowat16, isowat18, isowat2h
+
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+!-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
+
+          h2excess=((isowat2h/isowat16)/(rsmow(iwat2h)*1000._dblp)-1.0_dblp)         &
+         -8.0_dblp*((isowat18/isowat16)/(rsmow(iwat18)*1000._dblp)-1.0_dblp)
+
+        end function dexcessX
+
+
 
 !-----|--1--------2---------3---------4---------5---------6---------7-|
 !       Routine pour le calcul du ratio a partir du delta
@@ -170,6 +198,18 @@
       nbmolesw = ( rmois *1000.) / M16 ! M16 = molar mass of H216O 
 
       end function rmois2nbmolesw
+
+      pure elemental function nbmolesw2rmois(nbmolesw) result(rmois)
+
+      REAL(kind=dblp), INTENT(IN) :: nbmolesw
+      REAL(kind=dblp) :: rmois
+
+      ! dmr input rmoisg is in m3.m-2, output is in kmoles
+
+      rmois = (nbmolesw*M16)/1000._dblp
+      
+      end function nbmolesw2rmois
+
 
 !-----|--1----+----2----+----3----+----4----+----5----+----6----+----7----+----8----+----9----+----0----+----1----+----2----+----3-|
 !       Fonction pour calculer le contenu en moles isotopiques à partir du contenu en eau totale et du delta conventionnel
