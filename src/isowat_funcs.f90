@@ -586,7 +586,7 @@
        logical :: OKISH
         
         OKISH = .FALSE.
-        OKISH = (ABS(realleft-realright).LE.eps_dp*1000._dblp)       
+        OKISH = (ABS(realleft-realright).LE.eps_dp*2._dblp)       
        
        end function REAL_EQUAL
 
